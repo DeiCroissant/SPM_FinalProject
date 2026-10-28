@@ -1,0 +1,17 @@
+<%- include('partials/header') %>
+<section class="auth-layout page-width">
+  <aside class="auth-aside"><a class="back-link" href="/">← Back to home</a><h1><%= mode === 'register' ? 'A new account.\nA new chapter.' : 'Good to have\nyou back.' %></h1><p><%= mode === 'register' ? 'Your own little corner of Le Bookstore starts here.' : 'Log in to your Le Bookstore account.' %></p><div class="aside-rule"></div><span class="aside-bottom">A little space for a new chapter.</span></aside>
+  <div class="auth-form-panel"><h2><%= title %></h2><p class="form-intro"><%= mode === 'register' ? 'Just a few details to get started.' : 'Enter your email and password to continue.' %></p>
+    <% if (message) { %><div class="notice notice-success" role="status"><%= message %></div><% } %>
+    <% if (errors.form) { %><div class="notice notice-error" role="alert"><%= errors.form %></div><% } %>
+    <form action="/<%= mode %>" method="post" data-validate>
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <% if (mode === 'register') { %><div class="field"><label for="name">Full name</label><input id="name" name="name" autocomplete="name" maxlength="100" required value="<%= values.name || '' %>" <%- errors.name ? 'aria-invalid="true" aria-describedby="name-error"' : '' %>><% if (errors.name) { %><span class="field-error" id="name-error"><%= errors.name %></span><% } %></div><% } %>
+      <div class="field"><label for="email">Email address</label><input type="email" id="email" name="email" autocomplete="email" maxlength="254" required value="<%= values.email || '' %>" <%- errors.email ? 'aria-invalid="true" aria-describedby="email-error"' : '' %>><% if (errors.email) { %><span class="field-error" id="email-error"><%= errors.email %></span><% } %></div>
+      <div class="field"><label for="password">Password</label><div class="password-wrap"><input type="password" id="password" name="password" autocomplete="<%= mode === 'register' ? 'new-password' : 'current-password' %>" required <%- mode === 'register' ? 'minlength="8" data-password-limit' : 'maxlength="200"' %> <%- errors.password ? 'aria-invalid="true" aria-describedby="password-error"' : '' %>><button type="button" class="password-toggle" data-toggle-password="password" aria-label="Show password" aria-pressed="false">Show</button></div><% if (mode === 'register') { %><span class="field-hint">At least 8 characters; at most 72 UTF-8 bytes.</span><% } %><% if (errors.password) { %><span class="field-error" id="password-error"><%= errors.password %></span><% } %></div>
+      <button type="submit" class="button button-full"><%= mode === 'register' ? 'Create account' : 'Log in' %> <span aria-hidden="true">↗</span></button>
+    </form>
+    <p class="form-switch"><%= mode === 'register' ? 'Already have an account?' : 'New to Le Bookstore?' %> <a href="<%= mode === 'register' ? '/login' : '/register' %>"><%= mode === 'register' ? 'Log in' : 'Create account' %></a></p>
+  </div>
+</section>
+<%- include('partials/footer') %>

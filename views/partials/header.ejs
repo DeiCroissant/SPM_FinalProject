@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Le Bookstore — your next chapter starts here.">
+  <title><%= title %> · Le Bookstore</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/styles.css"><script defer src="/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><div class="header-inner">
+    <a class="brand" href="/" aria-label="Le Bookstore home"><span class="brand-mark" aria-hidden="true">L<span>B</span></span><span>Le Bookstore<span class="brand-caption">Books & beginnings</span></span></a>
+    <nav aria-label="Main navigation">
+      <% if (user) { %>
+        <% if (user.role === 'Administrator') { %><a href="/admin/users" <%- path.startsWith('/admin') ? 'aria-current="page"' : '' %>>Manage accounts</a><% } %>
+        <a href="/account" <%- path === '/account' ? 'aria-current="page"' : '' %>><%= user.name %></a>
+        <form action="/logout" method="post" class="inline-form"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="button button-outline" type="submit">Log out</button></form>
+      <% } else { %>
+        <a href="/login" <%- path === '/login' ? 'aria-current="page"' : '' %>>Log in</a>
+        <a class="button" href="/register">Create account <span aria-hidden="true">↗</span></a>
+      <% } %>
+    </nav>
+  </div></header>
+  <main id="main">
