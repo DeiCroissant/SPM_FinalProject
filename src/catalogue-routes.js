@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { taxonomySchema, bookSchema, listTaxonomy, saveTaxonomy, taxonomyLabel, listBooks, findBook, saveBook, hideBook } from './catalogue.js';
+import { taxonomySchema, bookSchema, listTaxonomy, saveTaxonomy, taxonomyLabel, listBooks, findBook, saveBook, hideBook, parseCataloguePage, listBookPage } from './catalogue.js';
 import { fieldErrors } from './users.js';
 
 export function catalogueRouter(db) {
@@ -63,8 +63,14 @@ export function catalogueRouter(db) {
     return isApi(req) ? res.json({ id: req.params.id, hidden: true }) : res.redirect(303, '/admin/books?hidden=1');
   }
   router.post('/admin/books/:id/hide', hide); router.post('/api/admin/books/:id/hide', hide);
-  // Minimum public read surfaces needed to verify F2 AC; full F3/F4 remain separate work.
-  router.get('/books', async (req, res) => res.render('books-public', { title: 'Browse books', books: await listBooks(db) }));
+  // Public F3 list: bound pagination queries and exclude hidden records before counting.
+  router.get('/books', async (req, res) => {
+    const requested = parseCataloguePage(req.query.page);
+    if (requested === null) return res.status(400).render('error', { title: 'Invalid page', code: 400, message: 'Choose a positive whole page number.' });
+    const result = await listBookPage(db, requested);
+    if (result.page !== requested) return res.redirect(303, `/books?page=${result.page}`);
+    return res.render('books-public', { title: 'Browse books', ...result });
+  });
   router.get('/books/:id', async (req, res) => {
     const book = await findBook(db, req.params.id);
     if (!book) return missing(req, res);

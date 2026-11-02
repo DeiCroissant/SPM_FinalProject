@@ -1,5 +1,30 @@
 <%- include('partials/header') %>
-<section class="page-width admin-page"><div class="page-heading"><div><h1>Browse books</h1><p>A new chapter is waiting.</p></div></div>
-<div class="catalogue-grid"><% for(const book of books) { %><article class="catalogue-card"><a href="/books/<%= book.id %>"><img src="<%= book.cover_url %>" alt="Cover of <%= book.title %>" loading="lazy" referrerpolicy="no-referrer"><h2><%= book.title %></h2></a><p><%= book.author_name %></p><strong><%= Number(book.price).toLocaleString('en-US') %> VND</strong></article><% } %></div>
-<% if(!books.length) { %><p>No books are available yet. Please check back soon.</p><% } %>
-</section><%- include('partials/footer') %>
+<section class="page-width admin-page catalogue-page">
+  <div class="page-heading"><div><p class="eyebrow">The catalogue</p><h1>Find your next chapter</h1><p>Stories, ideas and fresh perspectives. Browse our newest arrivals.</p></div></div>
+  <div class="catalogue-summary"><p><%= totalBooks ? `Showing ${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, totalBooks)} of ${totalBooks} books` : 'No books available' %></p><span>Newest first</span></div>
+  <div class="catalogue-grid">
+  <% for (const book of books) { %>
+    <article class="catalogue-card" data-book-id="<%= book.id %>">
+      <a class="catalogue-cover" href="/books/<%= book.id %>"><img src="<%= book.cover_url %>" alt="Cover of <%= book.title %>" width="320" height="440" referrerpolicy="no-referrer" data-cover-fallback></a>
+      <p class="catalogue-category"><%= book.category_name %></p>
+      <h2><a href="/books/<%= book.id %>"><%= book.title %></a></h2>
+      <p class="catalogue-author"><%= book.author_name %></p>
+      <strong class="catalogue-price"><%= Number(book.price).toLocaleString('en-US') %> VND</strong>
+    </article>
+  <% } %>
+  </div>
+  <% if (!books.length) { %><div class="catalogue-empty"><h2>A new collection is on its way</h2><p>No books are available yet. Please check back soon.</p></div><% } %>
+  <% if (totalBooks > 0) { %>
+  <nav class="pagination" aria-label="Book list pages">
+    <% if (page > 1) { %><a class="page-control" rel="prev" href="/books?page=<%= page - 1 %>">← Previous</a><% } else { %><span class="page-control disabled" aria-disabled="true">← Previous</span><% } %>
+    <div class="page-numbers">
+    <% const candidates = [...new Set([1, page - 1, page, page + 1, totalPages])].filter(n => n >= 1 && n <= totalPages).sort((a,b) => a-b); let last=0; for (const n of candidates) { if(last && n > last + 1) { %><span aria-hidden="true">…</span><% } %>
+      <a class="page-number" href="/books?page=<%= n %>" aria-label="Page <%= n %>" <%- n === page ? 'aria-current="page"' : '' %>><%= n %></a>
+    <% last=n; } %>
+    </div>
+    <% if (page < totalPages) { %><a class="page-control" rel="next" href="/books?page=<%= page + 1 %>">Next →</a><% } else { %><span class="page-control disabled" aria-disabled="true">Next →</span><% } %>
+  </nav>
+  <p class="pagination-caption">Page <%= page %> of <%= totalPages %></p>
+  <% } %>
+</section>
+<%- include('partials/footer') %>
