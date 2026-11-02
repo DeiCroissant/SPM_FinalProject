@@ -12,8 +12,9 @@
   <header class="site-header"><div class="header-inner">
     <a class="brand" href="/" aria-label="Le Bookstore home"><span class="brand-mark" aria-hidden="true">L<span>B</span></span><span>Le Bookstore<span class="brand-caption">Books & beginnings</span></span></a>
     <nav aria-label="Main navigation">
+      <a href="/books">Browse books</a>
       <% if (user) { %>
-        <% if (user.role === 'Administrator') { %><a href="/admin/users" <%- path.startsWith('/admin') ? 'aria-current="page"' : '' %>>Manage accounts</a><% } %>
+        <% if (user.role === 'Administrator') { %><a href="/admin/books">Manage books</a><a href="/admin/users" <%- path.startsWith('/admin/users') ? 'aria-current="page"' : '' %>>Manage accounts</a><% } %>
         <a href="/account" <%- path === '/account' ? 'aria-current="page"' : '' %>><%= user.name %></a>
         <form action="/logout" method="post" class="inline-form"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="button button-outline" type="submit">Log out</button></form>
       <% } else { %>

@@ -1,0 +1,3 @@
+<%- include('partials/header') %>
+<section class="page-width admin-page"><a class="back-link" href="/books">← Back to books</a><article class="book-detail"><img src="<%= book.cover_url %>" alt="Cover of <%= book.title %>" referrerpolicy="no-referrer"><div><p class="eyebrow"><%= book.category_name %></p><h1><%= book.title %></h1><p>By <%= book.author_name %></p><p class="book-price"><%= Number(book.price).toLocaleString('en-US') %> VND</p><p class="book-description"><%= book.description %></p><p><%= book.stock %> in stock</p></div></article></section>
+<%- include('partials/footer') %>

@@ -70,3 +70,9 @@ References: [Express on Vercel](https://vercel.com/docs/frameworks/backend/expre
 F2: book/category/author management and soft delete. F3: responsive grid, newest-first, 12/page and 30+ seeds. F4: details, friendly missing/hidden IDs and return-state navigation. F5: combined title/author search, category/price filters and paging. Receive the exact CR01 before adding its scope.
 
 Extend `src/db.js` with book migrations and keep all management endpoints under the guarded `/admin` and `/api/admin` namespaces. Do not substitute browser localStorage for durable catalogue or account data.
+
+## Sprint 2 F2 catalogue management
+
+F2 is implemented on `codex/sprint2-f2`. Start the existing app with `npm start`, log in as Administrator, then open `/admin/books`. Add categories and authors first, then create/edit/hide books. Cover images use HTTP/HTTPS URLs. Hide preserves the database record.
+
+Run `npm test` for F1 regression and F2 validation/security checks. Read [F2 acceptance and code evidence](docs/F2_ACCEPTANCE_AND_TESTS.md) for exact files, routes, test mapping and QA handoff. The public `/books` and `/books/:id` pages currently provide the minimum read surfaces needed for F2; full F3 pagination, seed and performance verification are separate work.

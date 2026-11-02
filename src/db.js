@@ -1,3 +1,4 @@
+import { migrateCatalogue } from './catalogue.js';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
@@ -50,4 +51,5 @@ export async function migrate(db) {
     attempts INTEGER NOT NULL,
     expires_at BIGINT NOT NULL
   )`);
+  await migrateCatalogue(db);
 }
