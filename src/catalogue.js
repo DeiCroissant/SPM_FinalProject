@@ -73,3 +73,18 @@ export async function saveBook(db, data, id) {
 export async function hideBook(db, id) {
   return (await db.query('UPDATE books SET is_deleted=1, updated_at=$1 WHERE id=$2 AND is_deleted=0 RETURNING id', [Date.now(), id])).length > 0;
 }
+
+export const BOOKS_PER_PAGE = 12;
+export function parseCataloguePage(raw) {
+  if (raw === undefined) return 1;
+  if (typeof raw !== 'string' || !/^[1-9]\d*$/.test(raw) || !Number.isSafeInteger(Number(raw))) return null;
+  return Number(raw);
+}
+export async function listBookPage(db, requestedPage = 1) {
+  const [{ total }] = await db.query('SELECT count(*) AS total FROM books WHERE is_deleted=0');
+  const totalBooks = Number(total);
+  const totalPages = Math.max(1, Math.ceil(totalBooks / BOOKS_PER_PAGE));
+  const page = Math.min(requestedPage, totalPages);
+  const books = await db.query(`${selectBook} WHERE b.is_deleted=0 ORDER BY b.created_at DESC, b.id DESC LIMIT $1 OFFSET $2`, [BOOKS_PER_PAGE, (page - 1) * BOOKS_PER_PAGE]);
+  return { books, page, totalPages, totalBooks, pageSize: BOOKS_PER_PAGE };
+}

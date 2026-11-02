@@ -26,3 +26,9 @@ for (const form of document.querySelectorAll('[data-catalogue-form]')) {
     if (!form.reportValidity()) event.preventDefault();
   });
 }
+// Local fallback keeps the catalogue usable when a remote cover URL fails.
+for (const image of document.querySelectorAll('[data-cover-fallback]')) {
+  const fallback = () => { if (!image.dataset.fallbackApplied) { image.dataset.fallbackApplied='1'; image.src='/book-cover-placeholder.svg'; } };
+  image.addEventListener('error', fallback);
+  if (image.complete && image.naturalWidth === 0) fallback();
+}

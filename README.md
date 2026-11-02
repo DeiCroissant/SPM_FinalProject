@@ -76,3 +76,9 @@ Extend `src/db.js` with book migrations and keep all management endpoints under 
 F2 is implemented on `codex/sprint2-f2`. Start the existing app with `npm start`, log in as Administrator, then open `/admin/books`. Add categories and authors first, then create/edit/hide books. Cover images use HTTP/HTTPS URLs. Hide preserves the database record.
 
 Run `npm test` for F1 regression and F2 validation/security checks. Read [F2 acceptance and code evidence](docs/F2_ACCEPTANCE_AND_TESTS.md) for exact files, routes, test mapping and QA handoff. The public `/books` and `/books/:id` pages currently provide the minimum read surfaces needed for F2; full F3 pagination, seed and performance verification are separate work.
+
+## Sprint 2 F3 public catalogue
+
+F3 adds `/books?page=1` with 12 active books per page, newest-first order, responsive cards and a cover fallback. Add the optional sample catalogue explicitly with `npm run seed:catalogue`; it preserves existing records. Set `PUBLIC_BASE_URL` when the app is not at localhost:3000. On a fresh catalogue the 32 sample books produce 12/12/8 pages.
+
+See [F3 acceptance and measurements](docs/F3_ACCEPTANCE_AND_TESTS.md) for code locations, pagination edge cases, local performance measurements and independent QA handoff. Full F4 back-to-page behavior, F5 search/filter and hosting remain separate work.
