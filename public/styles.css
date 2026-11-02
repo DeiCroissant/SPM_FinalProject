@@ -793,3 +793,28 @@ td strong {
     margin-bottom: 25px;
   }
 }
+
+/* F2 catalogue forms extend the existing F1 visual language. */
+.catalogue-nav { display:flex; flex-wrap:wrap; gap:12px 24px; border-bottom:1px solid var(--line); padding:0 0 18px; margin-bottom:28px; }
+.catalogue-nav a { text-decoration:underline; text-underline-offset:4px; }
+.taxonomy-layout { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:36px; align-items:start; }
+.taxonomy-form { padding:24px; background:var(--soft); border-radius:var(--radius); }
+.taxonomy-form h2 { margin-top:0; }
+.book-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 24px; max-width:920px; }
+.field-wide { grid-column:1 / -1; }
+textarea { font:inherit; width:100%; border:1px solid var(--line); background:white; border-radius:var(--radius); padding:12px; resize:vertical; }
+textarea:focus { outline:2px solid var(--accent); outline-offset:2px; }
+.form-actions,.book-actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+.book-actions form { margin:0; }
+.catalogue-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:28px; }
+.catalogue-card { min-width:0; overflow-wrap:anywhere; }
+.catalogue-card img { width:100%; height:230px; object-fit:contain; background:var(--soft); }
+.catalogue-card h2 { font-size:21px; margin-bottom:4px; }
+.catalogue-card p { margin-top:0; }
+.book-detail { display:grid; grid-template-columns:minmax(0,280px) minmax(0,1fr); gap:48px; }
+.book-detail img { width:100%; max-height:400px; object-fit:contain; background:var(--soft); }
+.book-detail h1 { font-size:38px; line-height:1.2; overflow-wrap:anywhere; }
+.book-description { white-space:pre-wrap; overflow-wrap:anywhere; }
+.book-price { font-size:24px; font-weight:bold; }
+button:disabled { opacity:.55; cursor:not-allowed; }
+@media(max-width:760px) { .taxonomy-layout,.book-form,.book-detail { grid-template-columns:minmax(0,1fr); gap:20px; } .site-header nav { flex-wrap:wrap; } .header-inner { flex-wrap:wrap; gap:12px; } .book-detail img { max-width:220px; } }

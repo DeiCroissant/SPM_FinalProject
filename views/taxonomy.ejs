@@ -1,0 +1,15 @@
+<%- include('partials/header') %>
+<section class="page-width admin-page">
+<%- include('partials/catalogue-nav') %>
+<div class="page-heading"><div><h1>Manage <%= kind %></h1><p>Keep the catalogue organised and easy to update.</p></div><a class="button button-outline" href="/admin/books/new">Add a book</a></div>
+<% if (message) { %><div class="notice notice-success" role="status"><%= message %></div><% } %>
+<div class="taxonomy-layout"><div class="table-shell"><table><caption class="sr-only"><%= label %> records</caption><thead><tr><th>Name</th><th>Action</th></tr></thead><tbody>
+<% for (const item of items) { %><tr><td><%= item.name %></td><td><a class="button button-small button-outline" href="/admin/<%= kind %>/<%= item.id %>/edit">Edit<span class="sr-only"> <%= item.name %></span></a></td></tr><% } %>
+<% if (!items.length) { %><tr><td colspan="2">No <%= kind %> yet. Add the first one using the form.</td></tr><% } %>
+</tbody></table></div>
+<form class="taxonomy-form" action="/admin/<%= kind %><%= editing ? '/' + editing : '' %>" method="post" data-catalogue-form>
+<h2><%= editing ? 'Edit' : 'Add' %> <%= label.toLowerCase() %></h2><input type="hidden" name="_csrf" value="<%= csrf %>">
+<div class="field"><label for="taxonomy-name">Name</label><input id="taxonomy-name" name="name" required maxlength="100" data-trim-required value="<%= values.name || '' %>" <%- errors.name ? 'aria-invalid="true"' : '' %>><% if(errors.name) { %><span class="field-error" role="alert"><%= errors.name %></span><% } %></div>
+<button class="button" type="submit">Save <%= label.toLowerCase() %></button> <% if(editing) { %><a href="/admin/<%= kind %>" class="text-link">Cancel</a><% } %>
+</form></div></section>
+<%- include('partials/footer') %>

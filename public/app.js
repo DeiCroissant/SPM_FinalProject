@@ -13,3 +13,16 @@ for (const input of document.querySelectorAll('[data-password-limit]')) {
 }
 // Refresh protected state when a browser restores a page from back/forward cache.
 window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+for (const button of document.querySelectorAll('[data-confirm-hide]')) {
+  button.closest('form').addEventListener('submit', event => {
+    if (!window.confirm('Hide this book from the public catalogue? The record will be kept.')) event.preventDefault();
+  });
+}
+// Trimmed required fields complement native constraints and server validation.
+for (const form of document.querySelectorAll('[data-catalogue-form]')) {
+  for (const input of form.querySelectorAll('[data-trim-required]')) input.addEventListener('input', () => input.setCustomValidity(input.value.trim() ? '' : 'This field is required.'));
+  form.addEventListener('submit', event => {
+    for (const input of form.querySelectorAll('[data-trim-required]')) input.setCustomValidity(input.value.trim() ? '' : 'This field is required.');
+    if (!form.reportValidity()) event.preventDefault();
+  });
+}

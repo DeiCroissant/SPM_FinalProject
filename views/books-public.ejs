@@ -1,0 +1,5 @@
+<%- include('partials/header') %>
+<section class="page-width admin-page"><div class="page-heading"><div><h1>Browse books</h1><p>A new chapter is waiting.</p></div></div>
+<div class="catalogue-grid"><% for(const book of books) { %><article class="catalogue-card"><a href="/books/<%= book.id %>"><img src="<%= book.cover_url %>" alt="Cover of <%= book.title %>" loading="lazy" referrerpolicy="no-referrer"><h2><%= book.title %></h2></a><p><%= book.author_name %></p><strong><%= Number(book.price).toLocaleString('en-US') %> VND</strong></article><% } %></div>
+<% if(!books.length) { %><p>No books are available yet. Please check back soon.</p><% } %>
+</section><%- include('partials/footer') %>

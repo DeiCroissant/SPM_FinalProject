@@ -1,3 +1,4 @@
+import { catalogueRouter } from './catalogue-routes.js';
 import express from 'express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -17,7 +18,7 @@ export function createApp({ db, secret, secure = process.env.NODE_ENV === 'produ
   if (process.env.VERCEL) app.set('trust proxy', 1);
   app.set('view engine', 'ejs');
   app.set('views', fileURLToPath(new URL('../views/', import.meta.url)));
-  app.use(helmet({ contentSecurityPolicy: { directives: { 'upgrade-insecure-requests': secure ? [] : null } } }));
+  app.use(helmet({ contentSecurityPolicy: { directives: { 'upgrade-insecure-requests': secure ? [] : null, 'img-src': ["'self'", 'data:', 'https:', 'http:'] } } }));
   app.use((req, res, next) => {
     Object.assign(res.locals, { csrf: '', user: null, path: req.path, message: null });
     next();
@@ -161,6 +162,7 @@ export function createApp({ db, secret, secure = process.env.NODE_ENV === 'produ
   }
   app.post('/admin/users/:id/lock', updateLock);
   app.post('/api/admin/users/:id/lock', updateLock);
+  app.use(catalogueRouter(db));
   app.use((req, res) => failure(req, res, 404, 'We could not find that page.'));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
