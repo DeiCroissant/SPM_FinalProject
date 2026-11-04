@@ -26,7 +26,14 @@ export function createApp({ db, secret, secure = process.env.NODE_ENV === 'produ
   app.use(express.static(fileURLToPath(new URL('../public/', import.meta.url))));
   app.use(express.urlencoded({ extended: false, limit: '16kb' }));
   app.use(express.json({ limit: '16kb' }));
-  app.use(cookieParser(secret));
+  const parseCookies = cookieParser(secret);
+  app.use((req, res, next) => {
+    // Vercel may prepopulate req.cookies. Reparse the raw header so cookie-parser
+    // also verifies signed CSRF cookies instead of skipping initialization.
+    delete req.cookies;
+    delete req.signedCookies;
+    parseCookies(req, res, next);
+  });
   app.use(async (req, res, next) => {
     res.set('Cache-Control', 'no-store');
     res.set('Pragma', 'no-cache');
@@ -169,7 +176,8 @@ export function createApp({ db, secret, secure = process.env.NODE_ENV === 'produ
     if (error.type === 'entity.too.large') return failure(req, res, 413, 'This request is too large.');
     if (error.type === 'entity.parse.failed') return failure(req, res, 400, 'Invalid request body.');
     // Do not log request bodies, credentials or database URLs.
-    console.error('Request failed:', error.code || error.name || 'Error');
+    console.error('Request failed:', error.code || error.name || 'Error',
+      String(error.stack || '').split('\n').slice(1, 5).join('\n'));
     failure(req, res, 500, 'Something went wrong. Please try again.');
   });
   return app;
