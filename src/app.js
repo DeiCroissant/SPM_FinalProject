@@ -169,7 +169,8 @@ export function createApp({ db, secret, secure = process.env.NODE_ENV === 'produ
     if (error.type === 'entity.too.large') return failure(req, res, 413, 'This request is too large.');
     if (error.type === 'entity.parse.failed') return failure(req, res, 400, 'Invalid request body.');
     // Do not log request bodies, credentials or database URLs.
-    console.error('Request failed:', error.code || error.name || 'Error');
+    console.error('Request failed:', error.code || error.name || 'Error',
+      String(error.stack || '').split('\n').slice(1, 5).join('\n'));
     failure(req, res, 500, 'Something went wrong. Please try again.');
   });
   return app;
