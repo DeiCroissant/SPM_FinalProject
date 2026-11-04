@@ -2,6 +2,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
+import express from 'express';
 import { createApp } from '../src/app.js';
 import { openDatabase, migrate } from '../src/db.js';
 import { createUser, seedUsers } from '../src/users.js';
@@ -33,6 +34,17 @@ before(async () => {
   csrfCustomer = await csrf(customer, '/account');
 });
 after(async () => db.close());
+
+test('Hosting: pre-parsed cookies still verify CSRF and support login', async () => {
+  const host = express();
+  host.use((req, res, next) => { req.cookies = {}; next(); });
+  host.use(createApp({ db, secret: 'test-secret-with-more-than-32-characters', secure: false }));
+  const agent = request.agent(host);
+  const token = await csrf(agent);
+  await agent.post('/login').type('form').send({ _csrf: '0'.repeat(64), email: 'reader@example.com', password }).expect(403);
+  await agent.post('/login').type('form').send({ _csrf: token, email: 'reader@example.com', password }).expect(303);
+  await agent.get('/account').expect(200);
+});
 
 test('AC-01.1 registration persists normalized Customer and redirects to login', async () => {
   const agent = request.agent(app);
