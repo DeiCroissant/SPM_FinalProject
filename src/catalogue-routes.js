@@ -1,6 +1,15 @@
 import { Router } from 'express';
-import { taxonomySchema, bookSchema, listTaxonomy, saveTaxonomy, taxonomyLabel, listBooks, findBook, saveBook, hideBook, parseCataloguePage, listBookPage } from './catalogue.js';
+import { taxonomySchema, bookSchema, listTaxonomy, saveTaxonomy, taxonomyLabel, listBooks, findBook, saveBook, hideBook, parseCataloguePage, parseCatalogueFilters, listBookPage } from './catalogue.js';
 import { fieldErrors } from './users.js';
+
+function catalogueUrl(path, filters, page) {
+  const params = new URLSearchParams();
+  for (const [name, value] of Object.entries(filters)) {
+    if (value) params.set(name, value);
+  }
+  if (page !== undefined) params.set('page', page);
+  return params.size ? `${path}?${params}` : path;
+}
 
 export function catalogueRouter(db) {
   const router = Router();
@@ -63,19 +72,31 @@ export function catalogueRouter(db) {
     return isApi(req) ? res.json({ id: req.params.id, hidden: true }) : res.redirect(303, '/admin/books?hidden=1');
   }
   router.post('/admin/books/:id/hide', hide); router.post('/api/admin/books/:id/hide', hide);
-  // Public F3 list: bound pagination queries and exclude hidden records before counting.
   router.get('/books', async (req, res) => {
     const requested = parseCataloguePage(req.query.page);
     if (requested === null) return res.status(400).render('error', { title: 'Invalid page', code: 400, message: 'Choose a positive whole page number.' });
-    const result = await listBookPage(db, requested);
-    if (result.page !== requested) return res.redirect(303, `/books?page=${result.page}`);
-    return res.render('books-public', { title: 'Browse books', ...result });
+    const { filters, error } = parseCatalogueFilters(req.query);
+    const result = error ? { books: [], totalBooks: 0 } : await listBookPage(db, requested, filters);
+    const pageUrl = page => catalogueUrl('/books', filters, page);
+    if (!error && result.page !== requested) return res.redirect(303, pageUrl(result.page));
+    return res.status(error ? 400 : 200).render('books-public', {
+      title: 'Browse books', ...result, filters, error, pageUrl,
+      categories: await listTaxonomy(db, 'categories'),
+      detailUrl: id => catalogueUrl(`/books/${encodeURIComponent(id)}`, filters, requested > 1 ? requested : undefined)
+    });
   });
   router.get('/books/:id', async (req, res) => {
-    const book = await findBook(db, req.params.id);
-    if (!book) return missing(req, res);
-    if (Number(book.is_deleted)) return missing(req, res, 'Book unavailable');
-    return res.render('book-detail', { title: book.title, book });
+    const id = req.params.id;
+    const book = id.includes('\0') ? undefined : await findBook(db, id);
+    if (!book || Number(book.is_deleted)) {
+      return res.status(404).render('error', {
+        title: 'Book not found', code: 404, message: book ? 'Book unavailable.' : 'This book could not be found.'
+      });
+    }
+    const page = parseCataloguePage(req.query.page);
+    const { filters, error } = parseCatalogueFilters(req.query);
+    const backUrl = error || page === null ? '/books' : catalogueUrl('/books', filters, page > 1 ? page : undefined);
+    return res.render('book-detail', { title: book.title, book, backUrl });
   });
   return router;
 }

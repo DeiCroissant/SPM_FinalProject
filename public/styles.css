@@ -816,11 +816,17 @@ textarea:focus { outline:2px solid var(--accent); outline-offset:2px; }
 .book-detail h1 { font-size:38px; line-height:1.2; overflow-wrap:anywhere; }
 .book-description { white-space:pre-wrap; overflow-wrap:anywhere; }
 .book-price { font-size:24px; font-weight:bold; }
+.book-out-of-stock { display:inline-block; background:var(--soft); border:1px solid var(--line); border-radius:99px; padding:4px 12px; font-weight:bold; }
 button:disabled { opacity:.55; cursor:not-allowed; }
 @media(max-width:760px) { .taxonomy-layout,.book-form,.book-detail { grid-template-columns:minmax(0,1fr); gap:20px; } .site-header nav { flex-wrap:wrap; } .header-inner { flex-wrap:wrap; gap:12px; } .book-detail img { max-width:220px; } }
 
 /* F3 uses explicit desktop, tablet and phone breakpoints. */
 .catalogue-summary { display:flex; justify-content:space-between; align-items:center; gap:16px; border-top:1px solid var(--line); margin-bottom:28px; padding-top:14px; color:var(--muted); }
+.catalogue-filters { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1.4fr) repeat(2,minmax(0,1fr)); gap:14px; margin-bottom:22px; }
+.catalogue-filters .field { margin:0; }
+.catalogue-filters input,.catalogue-filters select { min-width:0; }
+.catalogue-filter-actions { grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:10px; }
+@media(max-width:760px) { .catalogue-filters { grid-template-columns:repeat(2,minmax(0,1fr)); } .catalogue-keyword,.catalogue-category-field { grid-column:1 / -1; } }
 .catalogue-summary p { margin:0; }
 .catalogue-grid { grid-template-columns:repeat(4,minmax(0,1fr)); gap:38px 28px; }
 .catalogue-cover { display:block; background:var(--soft); padding:18px; border:1px solid var(--line); border-radius:var(--radius); }
