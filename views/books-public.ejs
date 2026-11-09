@@ -1,30 +1,69 @@
 <%- include('partials/header') %>
 <section class="page-width admin-page catalogue-page">
   <div class="page-heading"><div><p class="eyebrow">The catalogue</p><h1>Find your next chapter</h1><p>Stories, ideas and fresh perspectives. Browse our newest arrivals.</p></div></div>
+  <form class="catalogue-filters" action="/books" method="get" role="search" aria-label="Search books">
+    <div class="field catalogue-keyword">
+      <label for="catalogue-q">Title or author</label>
+      <input id="catalogue-q" name="q" type="search" value="<%= filters.q ?? '' %>" maxlength="200">
+    </div>
+    <div class="field catalogue-category-field">
+      <label for="catalogue-category">Category</label>
+      <select id="catalogue-category" name="category">
+        <option value="">All categories</option>
+        <% for (const category of categories) { %>
+          <option value="<%= category.id %>" <%= filters.category === category.id ? 'selected' : '' %>><%= category.name %></option>
+        <% } %>
+      </select>
+    </div>
+    <div class="field">
+      <label for="catalogue-min">Min price (VND)</label>
+      <input id="catalogue-min" name="min" type="number" min="0" max="9999999999.99" step="0.01" value="<%= filters.min ?? '' %>">
+    </div>
+    <div class="field">
+      <label for="catalogue-max">Max price (VND)</label>
+      <input id="catalogue-max" name="max" type="number" min="0" max="9999999999.99" step="0.01" value="<%= filters.max ?? '' %>">
+    </div>
+    <div class="catalogue-filter-actions">
+      <button class="button" type="submit">Search</button>
+      <a class="button button-outline" href="/books">Clear filters</a>
+    </div>
+  </form>
+  <% if (error) { %>
+    <p class="field-error" role="alert"><%= error %></p>
+  <% } else { %>
   <div class="catalogue-summary"><p><%= totalBooks ? `Showing ${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, totalBooks)} of ${totalBooks} books` : 'No books available' %></p><span>Newest first</span></div>
   <div class="catalogue-grid">
   <% for (const book of books) { %>
     <article class="catalogue-card" data-book-id="<%= book.id %>">
-      <a class="catalogue-cover" href="/books/<%= book.id %>"><img src="<%= book.cover_url %>" alt="Cover of <%= book.title %>" width="320" height="440" referrerpolicy="no-referrer" data-cover-fallback></a>
+      <a class="catalogue-cover" href="<%= detailUrl(book.id) %>"><img src="<%= book.cover_url %>" alt="Cover of <%= book.title %>" width="320" height="440" referrerpolicy="no-referrer" data-cover-fallback></a>
       <p class="catalogue-category"><%= book.category_name %></p>
-      <h2><a href="/books/<%= book.id %>"><%= book.title %></a></h2>
+      <h2><a href="<%= detailUrl(book.id) %>"><%= book.title %></a></h2>
       <p class="catalogue-author"><%= book.author_name %></p>
       <strong class="catalogue-price"><%= Number(book.price).toLocaleString('en-US') %> VND</strong>
     </article>
   <% } %>
   </div>
-  <% if (!books.length) { %><div class="catalogue-empty"><h2>A new collection is on its way</h2><p>No books are available yet. Please check back soon.</p></div><% } %>
+  <% if (!books.length) { %>
+    <div class="catalogue-empty">
+      <% if (Object.values(filters).some(Boolean)) { %>
+        <h2>No books found matching your search</h2><p>Try another title, author or filter.</p>
+      <% } else { %>
+        <h2>A new collection is on its way</h2><p>No books are available yet. Please check back soon.</p>
+      <% } %>
+    </div>
+  <% } %>
   <% if (totalBooks > 0) { %>
   <nav class="pagination" aria-label="Book list pages">
-    <% if (page > 1) { %><a class="page-control" rel="prev" href="/books?page=<%= page - 1 %>">← Previous</a><% } else { %><span class="page-control disabled" aria-disabled="true">← Previous</span><% } %>
+    <% if (page > 1) { %><a class="page-control" rel="prev" href="<%= pageUrl(page - 1) %>">← Previous</a><% } else { %><span class="page-control disabled" aria-disabled="true">← Previous</span><% } %>
     <div class="page-numbers">
     <% const candidates = [...new Set([1, page - 1, page, page + 1, totalPages])].filter(n => n >= 1 && n <= totalPages).sort((a,b) => a-b); let last=0; for (const n of candidates) { if(last && n > last + 1) { %><span aria-hidden="true">…</span><% } %>
-      <a class="page-number" href="/books?page=<%= n %>" aria-label="Page <%= n %>" <%- n === page ? 'aria-current="page"' : '' %>><%= n %></a>
+      <a class="page-number" href="<%= pageUrl(n) %>" aria-label="Page <%= n %>" <%- n === page ? 'aria-current="page"' : '' %>><%= n %></a>
     <% last=n; } %>
     </div>
-    <% if (page < totalPages) { %><a class="page-control" rel="next" href="/books?page=<%= page + 1 %>">Next →</a><% } else { %><span class="page-control disabled" aria-disabled="true">Next →</span><% } %>
+    <% if (page < totalPages) { %><a class="page-control" rel="next" href="<%= pageUrl(page + 1) %>">Next →</a><% } else { %><span class="page-control disabled" aria-disabled="true">Next →</span><% } %>
   </nav>
   <p class="pagination-caption">Page <%= page %> of <%= totalPages %></p>
+  <% } %>
   <% } %>
 </section>
 <%- include('partials/footer') %>

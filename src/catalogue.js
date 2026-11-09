@@ -48,7 +48,8 @@ export async function saveTaxonomy(db, kind, data, id) {
     throw e;
   }
 }
-const selectBook = `SELECT b.*, a.name AS author_name, c.name AS category_name FROM books b JOIN authors a ON a.id=b.author_id JOIN categories c ON c.id=b.category_id`;
+const bookSource = 'FROM books b JOIN authors a ON a.id=b.author_id JOIN categories c ON c.id=b.category_id';
+const selectBook = `SELECT b.*, a.name AS author_name, c.name AS category_name ${bookSource}`;
 export async function listBooks(db, { admin = false } = {}) {
   return db.query(`${selectBook}${admin ? '' : ' WHERE b.is_deleted = 0'} ORDER BY b.created_at DESC, b.id DESC`);
 }
@@ -80,11 +81,48 @@ export function parseCataloguePage(raw) {
   if (typeof raw !== 'string' || !/^[1-9]\d*$/.test(raw) || !Number.isSafeInteger(Number(raw))) return null;
   return Number(raw);
 }
-export async function listBookPage(db, requestedPage = 1) {
-  const [{ total }] = await db.query('SELECT count(*) AS total FROM books WHERE is_deleted=0');
+export function parseCatalogueFilters(query) {
+  const limits = { q: 200, category: 100, min: 13, max: 13 };
+  const filters = {};
+  for (const [name, limit] of Object.entries(limits)) {
+    const raw = query[name] ?? '';
+    if (typeof raw !== 'string' || raw.includes('\0')) {
+      return { filters, error: 'Use one value for each search or filter field.' };
+    }
+    const value = raw.trim();
+    if (value.length > limit) return { filters, error: 'A search or filter value is too long.' };
+    filters[name] = value;
+  }
+  const validPrice = value => value === '' ||
+    (/^(?:\d+(?:\.\d{0,2})?|\.\d{1,2})$/.test(value) && Number(value) <= 9999999999.99);
+  if (!validPrice(filters.min) || !validPrice(filters.max)) {
+    return { filters, error: 'Enter a non-negative price with up to two decimal places.' };
+  }
+  if (filters.min && filters.max && Number(filters.min) > Number(filters.max)) {
+    return { filters, error: 'Minimum price must be less than or equal to maximum price.' };
+  }
+  return { filters };
+}
+
+export async function listBookPage(db, requestedPage = 1, filters = {}) {
+  const conditions = ['b.is_deleted=0'];
+  const params = [];
+  const bind = value => '$' + params.push(value);
+  if (filters.q) {
+    const lower = db.dialect === 'sqlite' ? 'unicode_lower' : 'lower';
+    const pattern = '%' + filters.q.toLowerCase().replace(/[!%_]/g, '!$&') + '%';
+    conditions.push(`(${lower}(b.title) LIKE ${bind(pattern)} ESCAPE '!' OR ${lower}(a.name) LIKE ${bind(pattern)} ESCAPE '!')`);
+  }
+  if (filters.category) conditions.push(`b.category_id = ${bind(filters.category)}`);
+  if (filters.min) conditions.push(`b.price >= ${bind(Number(filters.min))}`);
+  if (filters.max) conditions.push(`b.price <= ${bind(Number(filters.max))}`);
+  const where = 'WHERE ' + conditions.join(' AND ');
+  const [{ total }] = await db.query(`SELECT count(*) AS total ${bookSource} ${where}`, params);
   const totalBooks = Number(total);
   const totalPages = Math.max(1, Math.ceil(totalBooks / BOOKS_PER_PAGE));
   const page = Math.min(requestedPage, totalPages);
-  const books = await db.query(`${selectBook} WHERE b.is_deleted=0 ORDER BY b.created_at DESC, b.id DESC LIMIT $1 OFFSET $2`, [BOOKS_PER_PAGE, (page - 1) * BOOKS_PER_PAGE]);
+  const limit = bind(BOOKS_PER_PAGE);
+  const offset = bind((page - 1) * BOOKS_PER_PAGE);
+  const books = await db.query(`${selectBook} ${where} ORDER BY b.created_at DESC, b.id DESC LIMIT ${limit} OFFSET ${offset}`, params);
   return { books, page, totalPages, totalBooks, pageSize: BOOKS_PER_PAGE };
 }

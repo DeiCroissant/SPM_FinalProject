@@ -17,6 +17,7 @@ export async function openDatabase({ url = process.env.DATABASE_URL, filename = 
     const { DatabaseSync } = await import('node:sqlite');
     if (filename !== ':memory:') mkdirSync(dirname(filename), { recursive: true });
     const sqlite = new DatabaseSync(filename);
+    sqlite.function('unicode_lower', { deterministic: true }, value => value.toLowerCase());
     sqlite.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;');
     query = async (sql, params = []) => {
       // SQLite binding order follows placeholder occurrence; application SQL uses each $n once.
@@ -26,7 +27,7 @@ export async function openDatabase({ url = process.env.DATABASE_URL, filename = 
     };
     close = () => sqlite.close();
   }
-  return { query, close };
+  return { query, close, dialect: url ? 'postgres' : 'sqlite' };
 }
 
 export async function migrate(db) {
